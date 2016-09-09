@@ -32,7 +32,9 @@ int main(int argv, char* argc[])
 	if (media.openInput())
 		SDL_CreateThread(decode_thread, "", &media); // 创建解码线程，读取packet到队列中缓存
 
-	media.audio->audio_play();
+	media.audio->audio_play(); // create audio thread
+
+	// create video thread
 
 	getchar();
 	return 0;

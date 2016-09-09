@@ -30,6 +30,9 @@
     <ClCompile Include="Media.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Video.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PacketQueue.h">
@@ -42,6 +45,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Media.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Video.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
