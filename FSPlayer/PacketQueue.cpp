@@ -1,6 +1,8 @@
 
 #include "PacketQueue.h"
 
+#include <vld.h>
+
 extern bool quit;
 
 PacketQueue::PacketQueue()
@@ -14,14 +16,14 @@ PacketQueue::PacketQueue()
 
 bool PacketQueue::enQueue(const AVPacket *packet)
 {
-	AVPacket pkt;
-	if (av_packet_ref(&pkt, packet) < 0)
+	AVPacket *pkt = av_packet_alloc();
+	if (av_packet_ref(pkt, packet) < 0)
 		return false;
 
 	SDL_LockMutex(mutex);
-	queue.push(pkt);
+	queue.push(*pkt);
 
-	size += pkt.size;
+	size += pkt->size;
 	nb_packets++;
 
 	SDL_CondSignal(cond);
@@ -50,6 +52,9 @@ bool PacketQueue::deQueue(AVPacket *packet, bool block)
 				ret = false;
 				break;
 			}
+
+			//av_packet_free(&queue.front());
+			av_packet_unref(&queue.front());
 			queue.pop();
 			nb_packets--;
 			size -= packet->size;

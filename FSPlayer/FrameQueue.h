@@ -13,6 +13,8 @@ extern "C"{
 
 struct FrameQueue
 {
+	static const int capacity = 256;
+
 	std::queue<AVFrame*> queue;
 
 	uint32_t nb_frames;
@@ -22,7 +24,7 @@ struct FrameQueue
 
 	FrameQueue();
 	bool enQueue(const AVFrame* frame);
-	bool deQueue(AVFrame *frame);
+	bool deQueue(AVFrame **frame);
 };
 
 

@@ -15,6 +15,8 @@ extern "C"{
 
 struct PacketQueue
 {
+	static const int capacity = 1024;
+
 	std::queue<AVPacket> queue;
 
 	Uint32    nb_packets;

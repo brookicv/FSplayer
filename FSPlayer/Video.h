@@ -5,10 +5,11 @@
 #include "PacketQueue.h"
 #include "FrameQueue.h"
 
+
 /**
  * 播放音频所需的数据封装
  */
-struct AudioState
+struct VideoState
 {
 	PacketQueue videoq;        // 保存的video packet的队列缓存
 
@@ -17,8 +18,18 @@ struct AudioState
 
 	FrameQueue frameq;         // 保存解码后的原始帧数据,已经根据需要转换成了相应的格式
 
-	void decode(const AVPacket *packet); // 将packet解码，并将
+	SDL_Window *window;
+	SDL_Renderer *renderer;
+	SDL_Texture *bmp;
+	SDL_Rect rect;
+
+	void video_play();
 	
+	VideoState();
 };
+
+
+int decode(void *arg); // 将packet解码，并将解码后的Frame放入FrameQueue队列中
+
 
 #endif

@@ -84,6 +84,7 @@
     <ClCompile Include="Media.cpp" />
     <ClCompile Include="PacketQueue.cpp" />
     <ClCompile Include="Video.cpp" />
+    <ClCompile Include="VideoDisplay.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Audio.h" />
@@ -91,6 +92,7 @@
     <ClInclude Include="PacketQueue.h" />
     <ClInclude Include="FrameQueue.h" />
     <ClInclude Include="Video.h" />
+    <ClInclude Include="VideoDisplay.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

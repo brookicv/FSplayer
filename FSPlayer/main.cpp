@@ -15,7 +15,8 @@ extern "C" {
 #include "PacketQueue.h"
 #include "Audio.h"
 #include "Media.h"
-
+#include "VideoDisplay.h"
+#include <vld.h>
 using namespace std;
 
 bool quit = false;
@@ -34,7 +35,28 @@ int main(int argv, char* argc[])
 
 	media.audio->audio_play(); // create audio thread
 
-	// create video thread
+	media.video->video_play(); // create video thread
+
+	SDL_Event event;
+	while (true) // SDL event loop
+	{
+		SDL_WaitEvent(&event);
+		switch (event.type)
+		{
+		case FF_QUIT_EVENT:
+		case SDL_QUIT:
+			quit = 1;
+			SDL_Quit();
+			return 0;
+
+		case FF_REFRESH_EVENT:
+			video_refresh_timer(media.video);
+			break;
+
+		default:
+			break;
+		}
+	}
 
 	getchar();
 	return 0;

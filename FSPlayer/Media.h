@@ -4,6 +4,7 @@
 
 #include <string>
 #include "Audio.h"
+#include "Video.h"
 
 extern "C" {
 
@@ -14,6 +15,7 @@ extern "C" {
 struct MediaState
 {
 	AudioState *audio;
+	VideoState *video;
 	AVFormatContext *pFormatCtx;
 
 	char* filename;

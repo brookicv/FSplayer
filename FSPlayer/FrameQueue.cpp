@@ -1,5 +1,6 @@
 
 #include "FrameQueue.h"
+#include <vld.h>
 
 FrameQueue::FrameQueue()
 {
@@ -13,7 +14,8 @@ bool FrameQueue::enQueue(const AVFrame* frame)
 {
 	AVFrame* p = av_frame_alloc();
 
-	if (av_frame_ref(p, frame) < 0)
+	int ret = av_frame_ref(p, frame);
+	if (ret < 0)
 		return false;
 
 	SDL_LockMutex(mutex);
@@ -27,7 +29,7 @@ bool FrameQueue::enQueue(const AVFrame* frame)
 	return true;
 }
 
-bool FrameQueue::deQueue(AVFrame* frame)
+bool FrameQueue::deQueue(AVFrame **frame)
 {
 	bool ret = true;
 
@@ -35,13 +37,14 @@ bool FrameQueue::deQueue(AVFrame* frame)
 	{
 		if (!queue.empty())
 		{
-			if (av_frame_ref(frame, queue.front()) < 0)
+			if (av_frame_ref(*frame, queue.front()) < 0)
 			{
 				ret = false;
 				break;
 			}
 
 			av_frame_free(&queue.front());
+			//av_frame_unref(queue.front());
 			queue.pop();
 
 			nb_frames--;

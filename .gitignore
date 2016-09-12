@@ -6,6 +6,9 @@
 *.user
 *.sln.docstates
 
+FSPlayer/FFmpegX86D.props
+FSPlayer/SDL2X86D.props
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
