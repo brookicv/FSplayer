@@ -1,6 +1,5 @@
 
 #include "Audio.h"
-#include <vld.h>
 extern "C" {
 
 #include <libswresample\swresample.h>

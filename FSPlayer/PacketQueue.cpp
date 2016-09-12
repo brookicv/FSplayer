@@ -1,8 +1,6 @@
 
 #include "PacketQueue.h"
 
-#include <vld.h>
-
 extern bool quit;
 
 PacketQueue::PacketQueue()

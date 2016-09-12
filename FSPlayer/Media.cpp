@@ -1,6 +1,5 @@
 
 # include "Media.h"
-#include <vld.h>
 
 extern bool quit;
 

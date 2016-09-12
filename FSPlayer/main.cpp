@@ -16,7 +16,6 @@ extern "C" {
 #include "Audio.h"
 #include "Media.h"
 #include "VideoDisplay.h"
-#include <vld.h>
 using namespace std;
 
 bool quit = false;
@@ -27,7 +26,8 @@ int main(int argv, char* argc[])
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
 
-	char* filename = "E:\\Wildlife.wmv";
+	//char* filename = "E:\\Wildlife.wmv";
+	char* filename = "F:\\test.rmvb";
 	MediaState media(filename);
 
 	if (media.openInput())

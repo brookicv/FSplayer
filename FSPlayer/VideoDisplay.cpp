@@ -1,6 +1,6 @@
 
 #include "VideoDisplay.h"
-#include <vld.h>
+
 extern "C"{
 
 #include <libswscale\swscale.h>

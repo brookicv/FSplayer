@@ -1,6 +1,5 @@
 
 #include "FrameQueue.h"
-#include <vld.h>
 
 FrameQueue::FrameQueue()
 {
