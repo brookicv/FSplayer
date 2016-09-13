@@ -11,12 +11,14 @@
  */
 struct VideoState
 {
-	PacketQueue videoq;        // 保存的video packet的队列缓存
+	PacketQueue* videoq;        // 保存的video packet的队列缓存
 
 	int video_stream;          // index of video stream
 	AVCodecContext *video_ctx; // have already be opened by avcodec_open2
 
-	FrameQueue frameq;         // 保存解码后的原始帧数据,已经根据需要转换成了相应的格式
+	FrameQueue frameq;         // 保存解码后的原始帧数据
+	AVFrame *frame;
+	AVFrame *displayFrame;
 
 	SDL_Window *window;
 	SDL_Renderer *renderer;
@@ -26,6 +28,8 @@ struct VideoState
 	void video_play();
 	
 	VideoState();
+
+	~VideoState();
 };
 
 

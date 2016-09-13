@@ -24,7 +24,7 @@ bool FrameQueue::enQueue(const AVFrame* frame)
 	
 	SDL_CondSignal(cond);
 	SDL_UnlockMutex(mutex);
-
+	
 	return true;
 }
 
@@ -32,6 +32,7 @@ bool FrameQueue::deQueue(AVFrame **frame)
 {
 	bool ret = true;
 
+	SDL_LockMutex(mutex);
 	while (true)
 	{
 		if (!queue.empty())

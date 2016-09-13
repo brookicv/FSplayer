@@ -92,16 +92,16 @@ int decode_thread(void *data)
 
 		if (packet->stream_index == media->audio->audio_stream) // audio stream
 		{
-			if (media->audio->audioq.nb_packets >= PacketQueue::capacity)
-				SDL_Delay(500);
+			/*if (media->audio->audioq.nb_packets >= PacketQueue::capacity)
+				SDL_Delay(500);*/
 			media->audio->audioq.enQueue(packet);
 		}		
 
 		else if (packet->stream_index == media->video->video_stream) // video stream
 		{
-			if (media->video->videoq.nb_packets >= PacketQueue::capacity)
-				SDL_Delay(1000 * 10);
-			media->video->videoq.enQueue(packet);
+			/*if (media->video->videoq.nb_packets >= PacketQueue::capacity)
+				SDL_Delay(1000 * 10);*/
+			media->video->videoq->enQueue(packet);
 		}		
 		else
 			av_packet_unref(packet);
@@ -110,8 +110,8 @@ int decode_thread(void *data)
 	av_packet_free(&packet);
 
 	// All done,wait for it
-	while (!quit)
-		SDL_Delay(100);
+	//while (!quit)
+		//SDL_Delay(100);
 
 	return 0;
 }

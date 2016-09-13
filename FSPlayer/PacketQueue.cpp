@@ -1,5 +1,6 @@
 
 #include "PacketQueue.h"
+#include <iostream>
 
 extern bool quit;
 
@@ -26,7 +27,6 @@ bool PacketQueue::enQueue(const AVPacket *packet)
 
 	SDL_CondSignal(cond);
 	SDL_UnlockMutex(mutex);
-
 	return true;
 }
 
