@@ -50,10 +50,11 @@ bool PacketQueue::deQueue(AVPacket *packet, bool block)
 				ret = false;
 				break;
 			}
-
 			//av_packet_free(&queue.front());
-			av_packet_unref(&queue.front());
+			AVPacket pkt = queue.front();
+
 			queue.pop();
+			av_packet_unref(&pkt);
 			nb_packets--;
 			size -= packet->size;
 

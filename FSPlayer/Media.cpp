@@ -1,5 +1,6 @@
 
 # include "Media.h"
+#include <iostream>
 
 extern bool quit;
 
@@ -79,8 +80,11 @@ int decode_thread(void *data)
 
 	while (true)
 	{
-		if (av_read_frame(media->pFormatCtx, packet) < 0)
+		int ret = av_read_frame(media->pFormatCtx, packet);
+		if (ret < 0)
 		{
+			if (ret == AVERROR_EOF)
+				break;
 			if (media->pFormatCtx->pb->error == 0) // No error,wait for user input
 			{
 				SDL_Delay(100);
@@ -95,6 +99,7 @@ int decode_thread(void *data)
 			/*if (media->audio->audioq.nb_packets >= PacketQueue::capacity)
 				SDL_Delay(500);*/
 			media->audio->audioq.enQueue(packet);
+			av_packet_unref(packet);
 		}		
 
 		else if (packet->stream_index == media->video->video_stream) // video stream
@@ -102,12 +107,18 @@ int decode_thread(void *data)
 			/*if (media->video->videoq.nb_packets >= PacketQueue::capacity)
 				SDL_Delay(1000 * 10);*/
 			media->video->videoq->enQueue(packet);
+			av_packet_unref(packet);
 		}		
 		else
 			av_packet_unref(packet);
 	}
 
+	
+
 	av_packet_free(&packet);
+
+	std::cout << "demutex finished " << std::endl << "audio packet queue size:" << media->audio->audioq.size << std::endl
+		<< "video packet queue size :" << media->video->videoq->size << std::endl;
 
 	// All done,wait for it
 	//while (!quit)

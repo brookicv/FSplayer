@@ -88,7 +88,7 @@ int  decode(void *arg)
 			continue;
 
 		if (video->frameq.nb_frames >= FrameQueue::capacity)
-			SDL_Delay(1000 * 10);
+			SDL_Delay(500);
 
 		video->frameq.enQueue(frame);
 
