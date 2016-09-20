@@ -41,17 +41,6 @@ void video_refresh_timer(void *userdata)
 			*/
 			schedule_refresh(video, 40);
 
-			/*AVFrame *frame = av_frame_alloc();
-			AVFrame *frameYUV = av_frame_alloc();
-
-			video->frameq.deQueue(&frame);
-
-			// ¸ñÊ½×ª»»
-			int numBytes = avpicture_get_size(AV_PIX_FMT_YUV420P, video->video_ctx->width, video->video_ctx->height);
-			uint8_t *buffer = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
-
-			avpicture_fill((AVPicture*)frameYUV, buffer, AV_PIX_FMT_YUV420P, video->video_ctx->width, video->video_ctx->height);*/
-
 			video->frameq.deQueue(&video->frame);
 
 			SwsContext *sws_ctx = sws_getContext(video->video_ctx->width, video->video_ctx->height, video->video_ctx->pix_fmt,
@@ -66,6 +55,7 @@ void video_refresh_timer(void *userdata)
 			SDL_RenderCopy(video->renderer, video->bmp, &video->rect, &video->rect);
 			SDL_RenderPresent(video->renderer);
 
+			sws_freeContext(sws_ctx);
 			av_frame_unref(video->frame);
 		}
 	}

@@ -1,5 +1,8 @@
 
 #include "Audio.h"
+
+#include <iostream>
+#include <fstream>
 extern "C" {
 
 #include <libswresample\swresample.h>
@@ -141,6 +144,7 @@ int audio_decode_frame(AudioState *audio_state, uint8_t *audio_buf, int buf_size
 
 	av_frame_free(&frame);
 	swr_free(&swr_ctx);
+
 	return data_size;
 }
 
