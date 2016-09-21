@@ -17,6 +17,7 @@ bool FrameQueue::enQueue(const AVFrame* frame)
 	if (ret < 0)
 		return false;
 
+	uint64_t pts = av_frame_get_best_effort_timestamp(frame);
 	SDL_LockMutex(mutex);
 	queue.push(p);
 

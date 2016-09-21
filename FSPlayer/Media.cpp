@@ -37,23 +37,25 @@ bool MediaState::openInput()
 
 	for (uint32_t i = 0; i < pFormatCtx->nb_streams; i++)
 	{
-		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO && audio->audio_stream < 0)
-			audio->audio_stream = i;
+		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO && audio->stream_index < 0)
+			audio->stream_index = i;
 
 		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO && video->video_stream < 0)
 			video->video_stream = i;
 	}
 
-	if (audio->audio_stream < 0 || video->video_stream < 0)
+	if (audio->stream_index < 0 || video->video_stream < 0)
 		return false;
 
 	// Find audio decoder
-	AVCodec *pCodec = avcodec_find_decoder(pFormatCtx->streams[audio->audio_stream]->codec->codec_id);
+	AVCodec *pCodec = avcodec_find_decoder(pFormatCtx->streams[audio->stream_index]->codec->codec_id);
 	if (!pCodec)
 		return false;
 
+	audio->stream = pFormatCtx->streams[audio->stream_index];
+
 	audio->audio_ctx = avcodec_alloc_context3(pCodec);
-	if (avcodec_copy_context(audio->audio_ctx, pFormatCtx->streams[audio->audio_stream]->codec) != 0)
+	if (avcodec_copy_context(audio->audio_ctx, pFormatCtx->streams[audio->stream_index]->codec) != 0)
 		return false;
 
 	avcodec_open2(audio->audio_ctx, pCodec, nullptr);
@@ -94,7 +96,7 @@ int decode_thread(void *data)
 				break;
 		}
 
-		if (packet->stream_index == media->audio->audio_stream) // audio stream
+		if (packet->stream_index == media->audio->stream_index) // audio stream
 		{
 			media->audio->audioq.enQueue(packet);
 			av_packet_unref(packet);

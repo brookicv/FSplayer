@@ -12,6 +12,8 @@ extern "C" {
 
 }
 
+struct VideoState;
+
 struct MediaState
 {
 	AudioState *audio;

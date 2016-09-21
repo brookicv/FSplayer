@@ -1,5 +1,6 @@
 
 #include "VideoDisplay.h"
+#include <iostream>
 
 extern "C"{
 
@@ -8,9 +9,9 @@ extern "C"{
 }
 
 // ÑÓ³Ùdelay msºóË¢ÐÂvideoÖ¡
-void schedule_refresh(VideoState *video, int delay)
+void schedule_refresh(MediaState *media, int delay)
 {
-	SDL_AddTimer(delay, sdl_refresh_timer_cb, video);
+	SDL_AddTimer(delay, sdl_refresh_timer_cb, media);
 }
 
 uint32_t sdl_refresh_timer_cb(uint32_t interval, void *opaque)
@@ -24,14 +25,16 @@ uint32_t sdl_refresh_timer_cb(uint32_t interval, void *opaque)
 
 void video_refresh_timer(void *userdata)
 {
-	VideoState *video = (VideoState*)userdata;
+	MediaState *media = (MediaState*)userdata;
+	VideoState *video = media->video;
 
 	if (video->video_stream >= 0)
 	{
 		if (video->videoq->queue.empty())
-			schedule_refresh(video, 1);
+			schedule_refresh(media, 1);
 		else
 		{
+			//std::cout << "Audio Clock:" << media->audio->get_audio_clock() << std::endl;
 			/* Now, normally here goes a ton of code
 			about timing, etc. we're just going to
 			guess at a delay for now. You can
@@ -39,7 +42,7 @@ void video_refresh_timer(void *userdata)
 			the timing - but I don't suggest that ;)
 			We'll learn how to do it for real later.
 			*/
-			schedule_refresh(video, 40);
+			schedule_refresh(media, 40);
 
 			video->frameq.deQueue(&video->frame);
 
@@ -61,6 +64,6 @@ void video_refresh_timer(void *userdata)
 	}
 	else
 	{
-		schedule_refresh(video, 100);
+		schedule_refresh(media, 100);
 	}
 }

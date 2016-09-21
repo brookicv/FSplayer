@@ -15,18 +15,21 @@ AudioState::AudioState()
 	:BUFFER_SIZE(192000)
 {
 	audio_ctx = nullptr;
-	audio_stream = -1;
+	stream_index = -1;
+	stream = nullptr;
+	audio_clock = 0;
 
 	audio_buff = new uint8_t[BUFFER_SIZE];
 	audio_buff_size = 0;
 	audio_buff_index = 0;
 }
 
-AudioState::AudioState(AVCodecContext *audioCtx, int stream)
+AudioState::AudioState(AVCodecContext *audioCtx, int index)
 	:BUFFER_SIZE(192000)
 {
 	audio_ctx = audioCtx;
-	audio_stream = stream;
+	stream_index = index;
+	
 
 	audio_buff = new uint8_t[BUFFER_SIZE];
 	audio_buff_size = 0;
@@ -58,6 +61,16 @@ bool AudioState::audio_play()
 	SDL_PauseAudio(0); // playing
 
 	return true;
+}
+
+double AudioState::get_audio_clock()
+{
+	int hw_buf_size = audio_buff_size - audio_buff_index;
+	int bytes_per_sec = stream->codec->sample_rate * audio_ctx->channels * 2;
+
+	double pts = audio_clock - static_cast<double>(hw_buf_size) / bytes_per_sec;
+	
+	return pts;
 }
 
 /**
@@ -105,13 +118,20 @@ int audio_decode_frame(AudioState *audio_state, uint8_t *audio_buf, int buf_size
 	int data_size = 0;
 	AVPacket pkt;
 
+	static double last_clock = 0;
+
 	SwrContext *swr_ctx = nullptr;
 
+	
 	if (quit)
 		return -1;
 	if (!audio_state->audioq.deQueue(&pkt, true))
 		return -1;
 
+	if (pkt.pts != AV_NOPTS_VALUE)
+	{
+		audio_state->audio_clock = av_q2d(audio_state->stream->codec->time_base) * pkt.pts;
+	}
 	int ret = avcodec_send_packet(audio_state->audio_ctx, &pkt);
 	if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF)
 		return -1;
@@ -119,8 +139,6 @@ int audio_decode_frame(AudioState *audio_state, uint8_t *audio_buf, int buf_size
 	ret = avcodec_receive_frame(audio_state->audio_ctx, frame);
 	if (ret < 0 && ret != AVERROR_EOF)
 		return -1;
-
-	int index = av_get_channel_layout_channel_index(av_get_default_channel_layout(4), AV_CH_FRONT_CENTER);
 
 	// 设置通道数或channel_layout
 	if (frame->channels > 0 && frame->channel_layout == 0)
@@ -141,6 +159,14 @@ int audio_decode_frame(AudioState *audio_state, uint8_t *audio_buf, int buf_size
 	// 转换，返回值为转换后的sample个数
 	int nb = swr_convert(swr_ctx, &audio_buf, static_cast<int>(dst_nb_samples), (const uint8_t**)frame->data, frame->nb_samples);
 	data_size = frame->channels * nb * av_get_bytes_per_sample(dst_format);
+
+	// 每秒钟音频播放的字节数 sample_rate * channels * sample_format(一个sample占用的字节数)
+	audio_state->audio_clock += static_cast<double>(data_size) / (2 * audio_state->stream->codec->channels * audio_state->stream->codec->sample_rate);
+
+	if (last_clock > audio_state->audio_clock)
+	{
+		std::cout << "PTS:" << pkt.pts << " clock:" << audio_state->audio_clock << std::endl;
+	}
 
 	av_frame_free(&frame);
 	swr_free(&swr_ctx);

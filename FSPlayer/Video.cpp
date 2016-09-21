@@ -32,7 +32,7 @@ VideoState::~VideoState()
 	av_frame_free(&displayFrame);
 }
 
-void VideoState::video_play()
+void VideoState::video_play(MediaState *media)
 {
 	int width = 800;
 	int height = 600;
@@ -62,7 +62,7 @@ void VideoState::video_play()
 
 	SDL_CreateThread(decode, "", this);
 
-	schedule_refresh(this, 40); // start display
+	schedule_refresh(media, 40); // start display
 }
 
 

@@ -3,6 +3,11 @@
 #define AUDIO_H
 
 #include "PacketQueue.h"
+extern "C"{
+
+#include <libavformat/avformat.h>
+
+}
 
 
 /**
@@ -14,11 +19,14 @@ struct AudioState
 
 	PacketQueue audioq;
 
+	double audio_clock; // audio clock
+	AVStream *stream; // audio stream
+
 	uint8_t *audio_buff;       // 解码后数据的缓冲空间
 	uint32_t audio_buff_size;  // buffer中的字节数
 	uint32_t audio_buff_index; // buffer中未发送数据的index
 	
-	int audio_stream;          // audio流index
+	int stream_index;          // audio流index
 	AVCodecContext *audio_ctx; // 已经调用avcodec_open2打开
 
 	AudioState();              //默认构造函数
@@ -30,6 +38,9 @@ struct AudioState
 	* audio play
 	*/
 	bool audio_play();
+
+	// get audio clock
+	double get_audio_clock();
 };
 
 /**

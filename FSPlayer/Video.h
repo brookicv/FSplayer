@@ -4,8 +4,9 @@
 
 #include "PacketQueue.h"
 #include "FrameQueue.h"
+#include "Media.h"
 
-
+struct MediaState;
 /**
  * 播放音频所需的数据封装
  */
@@ -25,7 +26,7 @@ struct VideoState
 	SDL_Texture *bmp;
 	SDL_Rect rect;
 
-	void video_play();
+	void video_play(MediaState *media);
 	
 	VideoState();
 
