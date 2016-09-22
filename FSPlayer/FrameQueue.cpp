@@ -17,7 +17,8 @@ bool FrameQueue::enQueue(const AVFrame* frame)
 	if (ret < 0)
 		return false;
 
-	uint64_t pts = av_frame_get_best_effort_timestamp(frame);
+	p->opaque = (void *)new double(*(double*)p->opaque); //上一个指向的是一个局部的变量，这里重新分配pts空间
+
 	SDL_LockMutex(mutex);
 	queue.push(p);
 
@@ -44,9 +45,10 @@ bool FrameQueue::deQueue(AVFrame **frame)
 				break;
 			}
 
-			av_frame_free(&queue.front());
-			//av_frame_unref(queue.front());
+			auto tmp = queue.front();
 			queue.pop();
+
+			av_frame_free(&tmp);
 
 			nb_frames--;
 

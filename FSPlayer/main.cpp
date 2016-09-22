@@ -38,7 +38,7 @@ int main(int argv, char* argc[])
 	media.video->video_play(&media); // create video thread
 
 	AVStream *audio_stream = media.pFormatCtx->streams[media.audio->stream_index];
-	AVStream *video_stream = media.pFormatCtx->streams[media.video->video_stream];
+	AVStream *video_stream = media.pFormatCtx->streams[media.video->stream_index];
 
 	double audio_duration = audio_stream->duration * av_q2d(audio_stream->time_base);
 	double video_duration = video_stream->duration * av_q2d(video_stream->time_base);

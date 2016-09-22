@@ -1,7 +1,10 @@
 
-# include "Media.h"
+#include "Media.h"
 #include <iostream>
 
+extern "C"{
+#include <libavutil/time.h>
+}
 extern bool quit;
 
 MediaState::MediaState(char* input_file)
@@ -40,14 +43,14 @@ bool MediaState::openInput()
 		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO && audio->stream_index < 0)
 			audio->stream_index = i;
 
-		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO && video->video_stream < 0)
-			video->video_stream = i;
+		if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO && video->stream_index < 0)
+			video->stream_index = i;
 	}
 
-	if (audio->stream_index < 0 || video->video_stream < 0)
+	if (audio->stream_index < 0 || video->stream_index < 0)
 		return false;
 
-	// Find audio decoder
+	// Fill audio state
 	AVCodec *pCodec = avcodec_find_decoder(pFormatCtx->streams[audio->stream_index]->codec->codec_id);
 	if (!pCodec)
 		return false;
@@ -60,16 +63,21 @@ bool MediaState::openInput()
 
 	avcodec_open2(audio->audio_ctx, pCodec, nullptr);
 
-	// Find video decoder
-	AVCodec *pVCodec = avcodec_find_decoder(pFormatCtx->streams[video->video_stream]->codec->codec_id);
+	// Fill video state
+	AVCodec *pVCodec = avcodec_find_decoder(pFormatCtx->streams[video->stream_index]->codec->codec_id);
 	if (!pVCodec)
 		return false;
 
+	video->stream = pFormatCtx->streams[video->stream_index];
+
 	video->video_ctx = avcodec_alloc_context3(pVCodec);
-	if (avcodec_copy_context(video->video_ctx, pFormatCtx->streams[video->video_stream]->codec) != 0)
+	if (avcodec_copy_context(video->video_ctx, pFormatCtx->streams[video->stream_index]->codec) != 0)
 		return false;
 
 	avcodec_open2(video->video_ctx, pVCodec, nullptr);
+
+	video->frame_timer = static_cast<double>(av_gettime()) / 1000000.0;
+	video->frame_last_delay = 40e-3;
 
 	return true;
 }
@@ -102,26 +110,16 @@ int decode_thread(void *data)
 			av_packet_unref(packet);
 		}		
 
-		else if (packet->stream_index == media->video->video_stream) // video stream
+		else if (packet->stream_index == media->video->stream_index) // video stream
 		{
 			media->video->videoq->enQueue(packet);
 			av_packet_unref(packet);
-			;
 		}		
 		else
 			av_packet_unref(packet);
 	}
 
-	
-
 	av_packet_free(&packet);
-
-	std::cout << "demutex finished " << std::endl << "audio packet queue size:" << media->audio->audioq.size << std::endl
-		<< "video packet queue size :" << media->video->videoq->size << std::endl;
-
-	// All done,wait for it
-	//while (!quit)
-		//SDL_Delay(100);
 
 	return 0;
 }

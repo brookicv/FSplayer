@@ -10,17 +10,23 @@ extern "C"{
 
 VideoState::VideoState()
 {
-	video_ctx    = nullptr;
-	video_stream = -1;
+	video_ctx        = nullptr;
+	stream_index     = -1;
+	stream           = nullptr;
 
-	window       = nullptr;
-	bmp          = nullptr;
-	renderer     = nullptr;
+	window           = nullptr;
+	bmp              = nullptr;
+	renderer         = nullptr;
 
-	frame        = nullptr;
-	displayFrame = nullptr;
+	frame            = nullptr;
+	displayFrame     = nullptr;
 
-	videoq = new PacketQueue();
+	videoq           = new PacketQueue();
+
+	frame_timer      = 0.0;
+	frame_last_delay = 0.0;
+	frame_last_pts   = 0.0;
+	video_clock      = 0.0;
 }
 
 VideoState::~VideoState()
@@ -65,6 +71,23 @@ void VideoState::video_play(MediaState *media)
 	schedule_refresh(media, 40); // start display
 }
 
+double VideoState::synchronize(AVFrame *srcFrame, double pts)
+{
+	double frame_delay;
+
+	if (pts != 0)
+		video_clock = pts; // Get pts,then set video clock to it
+	else
+		pts = video_clock; // Don't get pts,set it to video clock
+
+	frame_delay = av_q2d(stream->codec->time_base);
+	frame_delay += srcFrame->repeat_pict * (frame_delay * 0.5);
+
+	video_clock += frame_delay;
+
+	return pts;
+}
+
 
 int  decode(void *arg)
 {
@@ -73,7 +96,7 @@ int  decode(void *arg)
 	AVFrame *frame = av_frame_alloc();
 
 	AVPacket packet;
-
+	double pts;
 
 	while (true)
 	{
@@ -87,8 +110,17 @@ int  decode(void *arg)
 		if (ret < 0 && ret != AVERROR_EOF)
 			continue;
 
+		if ((pts = av_frame_get_best_effort_timestamp(frame)) == AV_NOPTS_VALUE)
+			pts = 0;
+		
+		pts *= av_q2d(video->stream->time_base);
+
+		pts = video->synchronize(frame, pts);
+
+		frame->opaque = &pts;
+
 		if (video->frameq.nb_frames >= FrameQueue::capacity)
-			SDL_Delay(500);
+			SDL_Delay(500 * 2);
 
 		video->frameq.enQueue(frame);
 

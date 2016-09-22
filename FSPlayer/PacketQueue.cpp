@@ -50,7 +50,6 @@ bool PacketQueue::deQueue(AVPacket *packet, bool block)
 				ret = false;
 				break;
 			}
-			//av_packet_free(&queue.front());
 			AVPacket pkt = queue.front();
 
 			queue.pop();
