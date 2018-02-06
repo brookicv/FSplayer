@@ -84,12 +84,18 @@ bool MediaState::openInput()
 
 int decode_thread(void *data)
 {
+        const long long  MAX_AUDIOQ_SIZE = (5 * 16 * 1024);
+	const long long   MAX_VIDEOQ_SIZE = (5 * 256 * 1024);
 	MediaState *media = (MediaState*)data;
 
 	AVPacket *packet = av_packet_alloc();
 
 	while (true)
 	{
+                if (media->audio->audioq.size > MAX_AUDIOQ_SIZE || media->video->videoq->size > MAX_VIDEOQ_SIZE) {
+			SDL_Delay(10);
+			continue;
+		}
 		int ret = av_read_frame(media->pFormatCtx, packet);
 		if (ret < 0)
 		{
