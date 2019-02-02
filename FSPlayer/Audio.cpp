@@ -75,7 +75,7 @@ double AudioState::get_audio_clock()
 }
 
 /**
-* ÏòÉè±¸·¢ËÍaudioÊı¾İµÄ»Øµ÷º¯Êı
+* å‘è®¾å¤‡å‘é€audioæ•°æ®çš„å›è°ƒå‡½æ•°
 */
 void audio_callback(void* userdata, Uint8 *stream, int len)
 {
@@ -85,13 +85,13 @@ void audio_callback(void* userdata, Uint8 *stream, int len)
 
 	int audio_size = 0;
 	int len1 = 0;
-	while (len > 0)// ÏòÉè±¸·¢ËÍ³¤¶ÈÎªlenµÄÊı¾İ
+	while (len > 0)// å‘è®¾å¤‡å‘é€é•¿åº¦ä¸ºlençš„æ•°æ®
 	{
-		if (audio_state->audio_buff_index >= audio_state->audio_buff_size) // »º³åÇøÖĞÎŞÊı¾İ
+		if (audio_state->audio_buff_index >= audio_state->audio_buff_size) // ç¼“å†²åŒºä¸­æ— æ•°æ®
 		{
-			// ´ÓpacketÖĞ½âÂëÊı¾İ
+			// ä»packetä¸­è§£ç æ•°æ®
 			audio_size = audio_decode_frame(audio_state, audio_state->audio_buff, sizeof(audio_state->audio_buff));
-			if (audio_size < 0) // Ã»ÓĞ½âÂëµ½Êı¾İ»ò³ö´í£¬Ìî³ä0
+			if (audio_size < 0) // æ²¡æœ‰è§£ç åˆ°æ•°æ®æˆ–å‡ºé”™ï¼Œå¡«å……0
 			{
 				audio_state->audio_buff_size = 0;
 				memset(audio_state->audio_buff, 0, audio_state->audio_buff_size);
@@ -101,11 +101,11 @@ void audio_callback(void* userdata, Uint8 *stream, int len)
 
 			audio_state->audio_buff_index = 0;
 		}
-		len1 = audio_state->audio_buff_size - audio_state->audio_buff_index; // »º³åÇøÖĞÊ£ÏÂµÄÊı¾İ³¤¶È
-		if (len1 > len) // ÏòÉè±¸·¢ËÍµÄÊı¾İ³¤¶ÈÎªlen
+		len1 = audio_state->audio_buff_size - audio_state->audio_buff_index; // ç¼“å†²åŒºä¸­å‰©ä¸‹çš„æ•°æ®é•¿åº¦
+		if (len1 > len) // å‘è®¾å¤‡å‘é€çš„æ•°æ®é•¿åº¦ä¸ºlen
 			len1 = len;
 
-		SDL_MixAudio(stream, audio_state->audio_buff + audio_state->audio_buff_index, len, SDL_MIX_MAXVOLUME);
+		SDL_MixAudio(stream, audio_state->audio_buff + audio_state->audio_buff_index, len1, SDL_MIX_MAXVOLUME);
 
 		len -= len1;
 		stream += len1;
@@ -138,7 +138,7 @@ int audio_decode_frame(AudioState *audio_state, uint8_t *audio_buf, int buf_size
 	if (ret < 0 && ret != AVERROR_EOF)
 		return -1;
 
-	// ÉèÖÃÍ¨µÀÊı»òchannel_layout
+	// è®¾ç½®é€šé“æ•°æˆ–channel_layout
 	if (frame->channels > 0 && frame->channel_layout == 0)
 		frame->channel_layout = av_get_default_channel_layout(frame->channels);
 	else if (frame->channels == 0 && frame->channel_layout > 0)
@@ -146,19 +146,19 @@ int audio_decode_frame(AudioState *audio_state, uint8_t *audio_buf, int buf_size
 
 	AVSampleFormat dst_format = AV_SAMPLE_FMT_S16;//av_get_packed_sample_fmt((AVSampleFormat)frame->format);
 	Uint64 dst_layout = av_get_default_channel_layout(frame->channels);
-	// ÉèÖÃ×ª»»²ÎÊı
+	// è®¾ç½®è½¬æ¢å‚æ•°
 	swr_ctx = swr_alloc_set_opts(nullptr, dst_layout, dst_format, frame->sample_rate,
 		frame->channel_layout, (AVSampleFormat)frame->format, frame->sample_rate, 0, nullptr);
 	if (!swr_ctx || swr_init(swr_ctx) < 0)
 		return -1;
 
-	// ¼ÆËã×ª»»ºóµÄsample¸öÊı a * b / c
+	// è®¡ç®—è½¬æ¢åçš„sampleä¸ªæ•° a * b / c
 	uint64_t dst_nb_samples = av_rescale_rnd(swr_get_delay(swr_ctx, frame->sample_rate) + frame->nb_samples, frame->sample_rate, frame->sample_rate, AVRounding(1));
-	// ×ª»»£¬·µ»ØÖµÎª×ª»»ºóµÄsample¸öÊı
+	// è½¬æ¢ï¼Œè¿”å›å€¼ä¸ºè½¬æ¢åçš„sampleä¸ªæ•°
 	int nb = swr_convert(swr_ctx, &audio_buf, static_cast<int>(dst_nb_samples), (const uint8_t**)frame->data, frame->nb_samples);
 	data_size = frame->channels * nb * av_get_bytes_per_sample(dst_format);
 
-	// Ã¿ÃëÖÓÒôÆµ²¥·ÅµÄ×Ö½ÚÊı sample_rate * channels * sample_format(Ò»¸ösampleÕ¼ÓÃµÄ×Ö½ÚÊı)
+	// æ¯ç§’é’ŸéŸ³é¢‘æ’­æ”¾çš„å­—èŠ‚æ•° sample_rate * channels * sample_format(ä¸€ä¸ªsampleå ç”¨çš„å­—èŠ‚æ•°)
 	audio_state->audio_clock += static_cast<double>(data_size) / (2 * audio_state->stream->codec->channels * audio_state->stream->codec->sample_rate);
 
 
